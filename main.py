@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os
+# -*- coding: utf-8 -*-
 
 
 def print_hi(name):
