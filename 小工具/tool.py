@@ -34,6 +34,17 @@ class Tool:
         """阶乘"""
         return reduce(lambda x,y: x*y, range(1,n+1))
 
+    @staticmethod
+    def is_contain_chinese(check_str):
+        """ 判断字符串中是否包含中文
+        :param check_str: {str} 需要检测的字符串
+        :return: {bool} 包含返回True， 不包含返回False
+        """
+        for ch in check_str:
+            if u'\u4e00' <= ch <= u'\u9fff':
+                return True
+        return False
+
 if __name__ == '__main__':
     l1 = [1,7,2,3,'f',3,4,5,6,7]
     print(Tool.list_uniq(l1))
@@ -43,3 +54,4 @@ if __name__ == '__main__':
     print(Tool.is_in_list(2,l2))
     print(Tool.list_element2str(l2))
     print(Tool.factorial(3))
+    print(Tool.is_contain_chinese('dedqwe大'))

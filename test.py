@@ -1,35 +1,20 @@
-#!/usr/bin/env python
-import os
-import cProfile
-import random
-
-lln = [random.random() for _ in range(100000)]
-
-def f1(lis):
-    l1_ = sorted(lis)
-    l2_ = [i for i in l1_ if i < 0.5]
-    return l2_
+import cv2
+import numpy as np
 
 
-def f2(lis):
-    l1_ = [i for i in lis if i > 0.5]
-    l2_ = sorted(l1_)
-    return l2_
+def video_demo():
+    capture = cv2.VideoCapture(0)  # 0为电脑内置摄像头
+    while (True):
+        ret, frame = capture.read()  # 摄像头读取,ret为是否成功打开摄像头,true,false。 frame为视频的每一帧图像
+        frame = cv2.flip(frame, 1)  # 摄像头是和人对立的，将图像左右调换回来正常显示。
+        cv2.imshow("video", frame)
+        c = cv2.waitKey(50)
+        if c == 27:
+            break
 
 
-def f3(lis):
-    l1_ = [i*i for i in lis]
-    l2_ = sorted(l1_)
-    return [i for i in l2_ if i < (0.5*0.5)]
-
-def main():
-    # cProfile.run('f1(lln)')
-    名字 = "陈帅"
-    print(名字)
-    # cProfile.run('f2(lln)')
-    # cProfile.run('f3(lln)')
+video_demo()
+cv2.destroyAllWindows()
 
 
-if __name__ == '__main__':
-    main()
-    exit(0)
+
