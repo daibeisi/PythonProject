@@ -29,4 +29,4 @@ class SendEmail:
 
 if __name__ == '__main__':
     sm = SendEmail(host='smtp.163.com', user='*', password='*')
-    sm.send_mail("1935039743@qq.com", "测试通知", "宁好啊")
+    sm.send_mail("", "测试通知", "宁好啊")
