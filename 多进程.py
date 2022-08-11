@@ -1,10 +1,20 @@
+# -*- coding: utf-8 -*-
 import os
-import platform
-from multiprocessing import Process
+import random
+import time
+from multiprocessing import Pool
 
 
-print('Process (%s) start...' % os.getpid())
-if platform.system().lower() == 'linux':
+def long_time_task(name):
+    print('Run task %s (%s)...' % (name, os.getpid()))
+    start = time.time()
+    time.sleep(random.random() * 3)
+    end = time.time()
+    print('Task %s runs %0.2f seconds.' % (name, (end - start)))
+
+
+if __name__ == '__main__':
+    print('Process (%s) start...' % os.getpid())
     # Only works on Unix/Linux/Mac:
     pid = os.fork()
     if pid == 0:
@@ -12,14 +22,11 @@ if platform.system().lower() == 'linux':
     else:
         print('I (%s) just created a child process (%s).' % (os.getpid(), pid))
 
-# 子进程要执行的代码
-def run_proc(name):
-    print('Run child process %s (%s)...' % (name, os.getpid()))
-
-if __name__=='__main__':
     print('Parent process %s.' % os.getpid())
-    p = Process(target=run_proc, args=('test',))
-    print('Child process will start.')
-    p.start()
-    p.join()
-    print('Child process end.')
+    pool = Pool(4)
+    for i in range(5):
+        pool.apply_async(long_time_task, args=(i,))
+    print('Waiting for all subprocesses done...')
+    pool.close()
+    pool.join()
+    print('All subprocesses done.')

@@ -2,6 +2,7 @@ import unittest
 
 from mydict import Dict
 
+
 class TestDict(unittest.TestCase):
 
     def setUp(self):
