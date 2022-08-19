@@ -37,7 +37,7 @@ class DLF:
             return str(e)
 
     def send_text(self, agentid, content, touser=None, toparty=None):
-        send_msg_url = self.url + "/message/send?access_token=%s" % (self._token)
+        send_msg_url = self.url + "/message/send?access_token=%s" % self._token
         send_data = {
             "touser": touser,
             "toparty": toparty,
@@ -55,7 +55,7 @@ class DLF:
 
     def send_image(self, agentid, file_obj, touser=None, toparty=None):
         media_id = self._get_media_id(file_obj)
-        send_msg_url = self.url + "/message/send?access_token=%s" % (self._token)
+        send_msg_url = self.url + "/message/send?access_token=%s" % self._token
         send_data = {
             "touser": touser,
             "toparty": toparty,

@@ -90,12 +90,13 @@ class FTPClient:
         return res
 
     def mkd(self, dir=None):
-        '''
-        创建目录
+        """创建目录
+
         :param dir: 目录名称
         :return: 执行结果
-        '''
-        if not dir: return 'Please input dirname'
+        """
+        if not dir:
+            return 'Please input dirname'
         res = copy.deepcopy(self.res)
         try:
             mkd_d = self._ftp.mkd(dir)

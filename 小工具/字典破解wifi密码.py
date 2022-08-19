@@ -57,7 +57,7 @@ class PoJie:
         #统计附近被发现的热点数量
         nums = len(scanres)
         # print("|SCAN GET %s"%(nums))
-        print("数量: %s"%(nums))
+        print("数量: %s" % nums)
         # 在控制台表格输出 扫描列表
         # 表格 标题行
         print("| %s |  %s |  %s | %s"%("WIFIID","SSID","BSSID","signal"))
