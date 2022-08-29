@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 import os
 import sys
 import datetime
@@ -30,17 +31,25 @@ class Backup:
         self.endpoint = endpoint
         try:
             import crcmod._crcfunext
+            self.is_installed_crcmod = True
         except (ModuleNotFoundError, ImportError) as e:
-            raise RuntimeError("crcmod模块没有正确安装，上传效率将大大降低")
+            # NOTE: crcmod模块没有正确安装，上传效率将大大降低，需改用MD5校验
+            self.is_installed_crcmod = False
 
     @staticmethod
-    def backup_db(store_path):
+    def backup_db(container_name, db_name, store_path):
         """备份数据库
 
+        :param container_name: 容器名
+        :param db_name: 数据库名
         :param store_path: 备份数据库存储路径
         :return:
         """
-        cmd = "docker exec -t hefei_save_db_1 pg_dump -U odoo -c hefei_save  > " + store_path
+        cmd = 'docker exec -t {container_name} pg_dump -U odoo -c {db_name}  > {store_path}'.format(
+            container_name=container_name,
+            db_name=db_name,
+            store_path=store_path
+        )
         res = subprocess.call(cmd, shell=True)
         assert res == 0, '备份数据库失败'
 
@@ -76,16 +85,19 @@ class Backup:
     def resumable_upload(self, bucket_name, key, file_path):
         """断点续传上传
 
-        :TODO: 解决crcmod未正确安装，使用md5校验
-
-        :param bucket_name:
-        :param key:
-        :param file_path:
+        :param bucket_name: 填写Bucket名称，例如examplebucket
+        :param key: 填写不能包含Bucket名称在内的Object完整路径，例如exampledir/exampleobject.txt
+        :param file_path: 填写本地文件的完整路径，例如D:\\localpath\\examplefile.txt
         :return:
         """
         auth = oss2.Auth(self.access_key_id, self.access_key_secret)
-        # bucket = oss2.Bucket(auth, self.endpoint, bucket_name, enable_crc=False)
-        bucket = oss2.Bucket(auth, self.endpoint, bucket_name)
+        headers = None
+        if self.is_installed_crcmod:
+            bucket = oss2.Bucket(auth, self.endpoint, bucket_name)
+        else:
+            bucket = oss2.Bucket(auth, self.endpoint, bucket_name, enable_crc=False)
+            md5_base64 = self.hash_big_file(file_path)
+            headers = {'Content-MD5': md5_base64}
 
         def percentage(consumed_bytes, total_bytes):
             """进度条回调函数，计算当前完成的百分比
@@ -96,9 +108,6 @@ class Backup:
             rate = int(100 * (float(consumed_bytes) / float(total_bytes)))
             print('\r{0}% '.format(rate), end='')
             sys.stdout.flush()
-
-        md5_base64 = self.hash_big_file(file_path)
-        headers = {'Content-MD5': md5_base64}
 
         oss2.resumable_upload(bucket, key, file_path,
                               store=oss2.ResumableStore(root='/tmp'),
@@ -117,9 +126,11 @@ class Backup:
         :return:
         """
         auth = oss2.Auth(self.access_key_id, self.access_key_secret)
-        bucket = oss2.Bucket(auth, self.endpoint, bucket_name, enable_crc=False)
+        if self.is_installed_crcmod:
+            bucket = oss2.Bucket(auth, self.endpoint, bucket_name)
+        else:
+            bucket = oss2.Bucket(auth, self.endpoint, bucket_name, enable_crc=False)
         total_size = os.path.getsize(file_path)
-        # percentage = functools.partial(self.percentage, total_bytes=total_size)
         part_size = determine_part_size(total_size, preferred_size=100 * 1024 * 1024)  # determine_part_size方法用于确定分片大小
         headers = dict()  # 如需在初始化分片时设置文件存储类型，请在init_multipart_upload中设置相关Headers
         # headers['Content-Disposition'] = 'oss_MultipartUpload.txt'  # 指定该Object被下载时的名称。
@@ -147,14 +158,18 @@ class Backup:
                 num_to_upload = min(part_size, total_size - offset)
                 # 调用SizedFileAdapter(fileobj, size)方法会生成一个新的文件对象，重新计算起始追加位置。
                 data = SizedFileAdapter(file_obj, num_to_upload)
-                md5 = hashlib.md5()
-                md5.update(bytes(file_obj.read(num_to_upload)))
-                md5_base64 = str(base64.b64encode(md5.digest()))
-                # result = bucket.upload_part(key, upload_id, part_number, data,
-                #                             progress_callback=percentage,
-                #                             headers={'Content-MD5': md5_base64})
-                result = bucket.upload_part(key, upload_id, part_number, data,
-                                            progress_callback=percentage)
+                if self.is_installed_crcmod:
+                    result = bucket.upload_part(key, upload_id, part_number, data,
+                                                progress_callback=percentage)
+                else:
+                    md5 = hashlib.md5()
+                    file_obj.seek(offset, 0)
+                    databuffer = file_obj.read(num_to_upload)
+                    md5.update(bytes(databuffer))
+                    md5_base64 = str(base64.b64encode(md5.digest()))
+                    result = bucket.upload_part(key, upload_id, part_number, data,
+                                                progress_callback=percentage,
+                                                headers={'Content-MD5': md5_base64})
                 parts.append(PartInfo(part_number, result.etag))
                 offset += num_to_upload
                 part_number += 1
@@ -168,14 +183,13 @@ class Backup:
 
 def main():
     print('{0} backup start'.format(datetime.datetime.now()).center(50, '='))
-    # backup = Backup(access_key_id='*', access_key_secret='*',
-    #                 endpoint='https://oss-cn-hangzhou.aliyuncs.com')
+    backup = Backup(access_key_id='', access_key_secret='')
     # backup.backup_db('/home/workspace/hefei_save.sql')
     # print('{0} database dump end'.format(datetime.datetime.now()).center(50, '='))
     # backup.zip_file('/home/workspace/hefei_save.sql', 'hefei_save.zip')
     # print('{0} file zip end'.format(datetime.datetime.now()).center(50, '='))
-    # backup.multipart_upload(bucket_name='ttwb-db', key='/example/changzhou_22_06_23_23_59_01.zip',
-    #                         file_path='D:\\Downloads\\changzhou_22_06_23_23_59_01.zip')
+    backup.multipart_upload(bucket_name='ttwb-db', key='/example/hefeittwb_22_08_10_02_00_00.zip',
+                            file_path='/home/hefeittwb_22_08_10_02_00_00.zip')
     # backup.resumable_upload(bucket_name='ttwb-db', key='/example/changzhou_22_06_23_23_59_01.zip',
     #                         file_path='D:\\Downloads\\changzhou_22_06_23_23_59_01.zip')
     print('\n' + '{0} backup end'.format(datetime.datetime.now()).center(50, '='))
