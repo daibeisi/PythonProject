@@ -31,10 +31,11 @@ class Backup:
         self.endpoint = endpoint
         try:
             import crcmod._crcfunext
-            self.is_installed_crcmod = True
-        except (ModuleNotFoundError, ImportError) as e:
+        except Exception as e:
             # NOTE: crcmod模块没有正确安装，上传效率将大大降低，需改用MD5校验
             self.is_installed_crcmod = False
+        else:
+            self.is_installed_crcmod = True
 
     @staticmethod
     def backup_db(container_name, db_name, store_path):
