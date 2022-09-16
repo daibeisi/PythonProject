@@ -1,6 +1,4 @@
 import re
-import sys
-import time
 import subprocess
 from datetime import datetime
 from io import StringIO
