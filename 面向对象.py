@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 import datetime
 
-class Animal:
-    """动物类
 
-    """
+class Animal:
+    """动物类"""
     __slots__ = ('_name', '__age')  # 用tuple定义实例允许绑定的属性名称
     # 类变量
     name1 = "动物类"
@@ -56,7 +55,7 @@ class Animal:
         print("hello word")
 
     def __del__(self):
-        print("{name}对象被清除".format(name = self.name))
+        print("{name}对象被清除".format(name=self.name))
 
     # 类方法
     @classmethod
@@ -94,8 +93,7 @@ class RunnableMixIn:
 
 
 if __name__ == '__main__':
-    cat = Animal("cat",90)
-    cat._Animal__say()
+    cat = Animal("cat", 90)
     cat._name = "111"
     cat.age = 10
     print(cat.name)

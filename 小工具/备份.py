@@ -164,7 +164,7 @@ class Backup:
                                                 progress_callback=percentage)
                 else:
                     md5 = hashlib.md5()
-                    file_obj.seek(offset, 0)
+                    file_obj.seek(offset, 0)  # 从文件开头开始偏移offset个字节
                     databuffer = file_obj.read(num_to_upload)
                     md5.update(bytes(databuffer))
                     md5_base64 = str(base64.b64encode(md5.digest()))

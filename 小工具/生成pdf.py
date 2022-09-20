@@ -10,64 +10,43 @@ from reportlab.graphics.shapes import Drawing  # 绘图工具
 from reportlab.lib.units import cm  # 单位：cm
 
 # 注册字体(提前准备好字体文件, 如果同一个文件需要多种字体可以注册多个)
-pdfmetrics.registerFont(TTFont('SimSun', 'C:\Windows\Fonts\msyh.ttc'))
+pdfmetrics.registerFont(TTFont('MSYH', 'C:\\Windows\\Fonts\\msyh.ttc'))
 
 
-class Graphs:
-    # 绘制标题
-    @staticmethod
-    def draw_title(title: str):
-        # 获取所有样式表
-        style = getSampleStyleSheet()
-        # 拿到标题样式
-        ct = style['Heading1']
-        # 单独设置样式相关属性
-        ct.fontName = 'SimSun'  # 字体名
-        ct.fontSize = 18  # 字体大小
-        ct.leading = 50  # 行间距
-        ct.textColor = colors.green  # 字体颜色
-        ct.alignment = 1  # 居中
-        ct.bold = True
-        # 创建标题对应的段落，并且返回
+class GeneratePDF:
+    def __init__(self):
+        self._style = getSampleStyleSheet()  # 获取所有样式表
+
+    def draw_title(self, title: str):
+        """绘制标题"""
+        ct = self._style['Title']  # 拿到标题样式
+        ct.fontName = 'MSYH'  # 字体名
+        # ct.textColor = colors.green  # 字体颜色
+        # ct.bold = True
         return Paragraph(title, ct)
 
-    # 绘制小标题
-    @staticmethod
-    def draw_little_title(title: str):
-        # 获取所有样式表
-        style = getSampleStyleSheet()
-        # 拿到标题样式
-        ct = style['Normal']
-        # 单独设置样式相关属性
-        ct.fontName = 'SimSun'  # 字体名
-        ct.fontSize = 15  # 字体大小
-        ct.leading = 30  # 行间距
-        ct.textColor = colors.red  # 字体颜色
-        # 创建标题对应的段落，并且返回
+    def draw_little_title(self, title: str):
+        """绘制小标题"""
+        ct = self._style['Heading1']
+        ct.fontName = 'MSYH'  # 字体名
         return Paragraph(title, ct)
 
-    # 绘制普通段落内容
-    @staticmethod
-    def draw_text(text: str):
-        # 获取所有样式表
-        style = getSampleStyleSheet()
-        # 获取普通样式
-        ct = style['Normal']
-        ct.fontName = 'SimSun'
-        ct.fontSize = 12
+    def draw_text(self, text: str):
+        """绘制正文"""
+        ct = self._style['BodyText']
+        ct.fontName = 'MSYH'  # 字体名
+        ct.firstLineIndent = 32  # 第一行开头空格
         ct.wordWrap = 'CJK'  # 设置自动换行
         ct.alignment = 0  # 左对齐
-        ct.firstLineIndent = 32  # 第一行开头空格
-        ct.leading = 25
         return Paragraph(text, ct)
 
-    # 绘制表格
     @staticmethod
     def draw_table(*args):
+        """绘制表格"""
         # 列宽度
         col_width = 120
         style = [
-            ('FONTNAME', (0, 0), (-1, -1), 'SimSun'),  # 字体
+            ('FONTNAME', (0, 0), (-1, -1), 'MSYH'),  # 字体
             ('FONTSIZE', (0, 0), (-1, 0), 12),  # 第一行的字体大小
             ('FONTSIZE', (0, 1), (-1, -1), 10),  # 第二行到最后一行的字体大小
             ('BACKGROUND', (0, 0), (-1, 0), '#d5dae6'),  # 设置第一行背景颜色
@@ -84,9 +63,9 @@ class Graphs:
         table = Table(args, colWidths=col_width, style=style)
         return table
 
-    # 创建图表
     @staticmethod
     def draw_bar(bar_data: list, ax: list, items: list):
+        """创建图表"""
         drawing = Drawing(500, 250)
         bc = VerticalBarChart()
         bc.x = 45  # 整个图表的x坐标
@@ -104,7 +83,7 @@ class Graphs:
         bc.categoryAxis.categoryNames = ax
         # 图示
         leg = Legend()
-        leg.fontName = 'SimSun'
+        leg.fontName = 'MSYH'
         leg.alignment = 'right'
         leg.boxAnchor = 'ne'
         leg.x = 475  # 图例的x坐标
@@ -116,9 +95,9 @@ class Graphs:
         drawing.add(bc)
         return drawing
 
-    # 绘制图片
     @staticmethod
     def draw_img(path):
+        """绘制图片"""
         img = Image(path)  # 读取指定路径下的图片
         img.drawWidth = 5 * cm  # 设置图片的宽度
         img.drawHeight = 8 * cm  # 设置图片的高度
@@ -129,18 +108,19 @@ if __name__ == '__main__':
     # 创建内容对应的空列表
     content = list()
     # 添加标题
-    content.append(Graphs.draw_title('数据分析就业薪资'))
+    pdf = GeneratePDF()
+    content.append(pdf.draw_title('数据分析就业薪资'))
     # 添加图片
     # content.append(Graphs.draw_img('抗疫必胜.png'))
     # 添加段落文字
-    content.append(Graphs.draw_text('众所周知，大数据分析师岗位是香饽饽，'
-                                    '近几年数据分析热席卷了整个互联网行业，'
-                                    '与数据分析的相关的岗位招聘、培训数不胜数。'
-                                    '很多人前赴后继，想要参与到这波红利当中。'
-                                    '那么数据分析师就业前景到底怎么样呢？'))
+    content.append(pdf.draw_text('众所周知，大数据分析师岗位是香饽饽，'
+                                 '近几年数据分析热席卷了整个互联网行业，'
+                                 '与数据分析的相关的岗位招聘、培训数不胜数。'
+                                 '很多人前赴后继，想要参与到这波红利当中。'
+                                 '那么数据分析师就业前景到底怎么样呢？'))
     # 添加小标题
-    content.append(Graphs.draw_title(''))
-    content.append(Graphs.draw_little_title('不同级别的平均薪资'))
+    # content.append(Graphs.draw_title(''))
+    content.append(pdf.draw_little_title('不同级别的平均薪资'))
     # 添加表格
     data = [
         ('职位名称', '平均薪资', '较上年增长率'),
@@ -148,14 +128,14 @@ if __name__ == '__main__':
         ('高级数据分析师', '25.5K', '14%'),
         ('资深数据分析师', '29.3K', '10%')
     ]
-    content.append(Graphs.draw_table(*data))
+    content.append(pdf.draw_table(*data))
     # 生成图表
-    content.append(Graphs.draw_title(''))
-    content.append(Graphs.draw_little_title('热门城市的就业情况'))
+    # content.append(Graphs.draw_title(''))
+    content.append(pdf.draw_little_title('热门城市的就业情况'))
     b_data = [(25400, 12900, 20100, 20300, 20300, 17400), (15800, 9700, 12982, 9283, 13900, 7623)]
     ax_data = ['BeiJing', 'ChengDu', 'ShenZhen', 'ShangHai', 'HangZhou', 'NanJing']
     leg_items = [(colors.red, '平均薪资'), (colors.green, '招聘量')]
-    content.append(Graphs.draw_bar(b_data, ax_data, leg_items))
+    content.append(pdf.draw_bar(b_data, ax_data, leg_items))
     # 生成pdf文件
     doc = SimpleDocTemplate('report.pdf', pagesize=letter)
     doc.build(content)

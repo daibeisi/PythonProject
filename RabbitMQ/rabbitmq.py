@@ -5,6 +5,9 @@ import threading
 from typing import Union
 
 
+# TODO: 连接管理、错误处理、连接恢复、并发、度量集合
+
+
 class RabbitMQ:
     _instance = None
     _lock = threading.RLock()
@@ -50,7 +53,7 @@ class RabbitMQ:
                     port=self.__port,
                     virtual_host=self.__virtual_host,
                     credentials=pika.PlainCredentials(self.__username, self.__password),
-                    heartbeat=0
+                    heartbeat=5
                 )
             )
             print('新建连接')
@@ -70,7 +73,7 @@ class RabbitMQ:
             """自动手动确认"""
             try:
                 callback(ch, method, properties, body)
-            except:
+            except Exception as e:
                 ch.basic_reject(delivery_tag=method.delivery_tag, requeue=False)
                 # TODO: 先清除后发送到队尾重试，优化消息重试次数，达到了重试上限以后，
                 #  手动确认，队列删除此消息，并将消息持久化入MySQL并推送报警，进行人工处理和定时任务做补偿。
