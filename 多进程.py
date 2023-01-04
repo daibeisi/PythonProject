@@ -6,27 +6,26 @@ from multiprocessing import Pool
 
 
 def long_time_task(name):
-    print('Run task %s (%s)...' % (name, os.getpid()))
+    print('%s任务（%s）开始运行...' % (name, os.getpid()))
     start = time.time()
     time.sleep(random.random() * 3)
     end = time.time()
-    print('Task %s runs %0.2f seconds.' % (name, (end - start)))
+    print('任务（%s）运行了%0.2f秒。' % (name, (end - start)))
 
 
 if __name__ == '__main__':
-    print('Process (%s) start...' % os.getpid())
+    print('程序（%s）开始运行...' % os.getpid())
     # Only works on Unix/Linux/Mac:
-    pid = os.fork()
-    if pid == 0:
-        print('I am child process (%s) and my parent is %s.' % (os.getpid(), os.getppid()))
-    else:
-        print('I (%s) just created a child process (%s).' % (os.getpid(), pid))
+    # pid = os.fork()
+    # if pid == 0:
+    #     print('我是子进程（%s），我的父进程是（%s）。' % (os.getpid(), os.getppid()))
+    # else:
+    #     print('我（%s）只创建了一个子进程（%s）。' % (os.getpid(), pid))
 
-    print('Parent process %s.' % os.getpid())
     pool = Pool(4)
     for i in range(5):
         pool.apply_async(long_time_task, args=(i,))
-    print('Waiting for all subprocesses done...')
+    print('等待所有子进程完成...')
     pool.close()
     pool.join()
-    print('All subprocesses done.')
+    print('所有子进程完成。')
