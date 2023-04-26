@@ -1,3 +1,5 @@
+""" RabbitMQ Client
+"""
 import os
 import sys
 import pika
@@ -8,7 +10,7 @@ from typing import Union
 # TODO: 连接管理、错误处理、连接恢复、并发、度量集合
 
 
-class RabbitMQ:
+class RabbitMQClient:
     _instance = None
     _lock = threading.RLock()
 
@@ -187,7 +189,7 @@ class RabbitMQ:
 
 
 def main():
-    rabbit_mq = RabbitMQ(host='', port=5672,
+    rabbit_mq = RabbitMQClient(host='', port=5672,
                          username='root', password='')
     # while True:
     #     a = input('请输入消息：')
