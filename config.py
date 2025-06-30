@@ -48,7 +48,7 @@ class Config:
             self,
             config_file: str | Path | None = None,
             environ: typing.Mapping[str, str] = env,
-            secret_key: str | None = None
+            secret_key: str | bytes | None = None  # 支持字节类型的密钥
     ) -> None:
         """
         :param config_file: 配置文件路径
@@ -137,17 +137,27 @@ class Config:
             raise ValueError(f"Config '{key}' has value '{value}'. Not a valid {cast.__name__}.")
 
     def aes_encrypt(self, text: str) -> str:
-        key = self._secret_key.ljust(16)[:16].encode("utf-8")
+        if not self._secret_key:
+            raise ValueError("Secret key is required for encryption")
+        key = self._get_formatted_key()
         cipher = AES.new(key, AES.MODE_CBC, self._iv)
         encrypted_bytes = cipher.encrypt(pad(text.encode("utf-8"), AES.block_size))
         return base64.b64encode(encrypted_bytes).decode("utf-8")
 
     def _aes_decrypt(self, text: str) -> str:
-        key = self._secret_key.ljust(16)[:16].encode("utf-8")
+        if not self._secret_key:
+            raise ValueError("Secret key is required for decryption")
+        key = self._get_formatted_key()
         cipher = AES.new(key, AES.MODE_CBC, self._iv)
         decrypted_bytes = unpad(cipher.decrypt(base64.b64decode(text)), AES.block_size)
         return decrypted_bytes.decode("utf-8")
 
+    def _get_formatted_key(self) -> bytes:
+        if isinstance(self._secret_key, bytes):
+            key = self._secret_key
+        else:
+            key = self._secret_key.encode("utf-8")
+        return key.ljust(16)[:16]
 
 if __name__ == "__main__":
     config = Config('.env', secret_key='_2@_c-8m3cb-c_!l')
