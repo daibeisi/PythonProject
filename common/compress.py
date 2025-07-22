@@ -70,10 +70,8 @@ def _compress_tar(source_path: Path, archive_path: Path, format_type: str) -> st
     }
 
     with tarfile.open(archive_path, mode_map[format_type]) as tar:
-        if source_path.is_file():
-            tar.add(source_path, arcname=source_path.name)
-        else:
-            tar.add(source_path, arcname=source_path.name)
+        tar.add(source_path, arcname=source_path.name)
+
     return str(archive_path)
 
 
