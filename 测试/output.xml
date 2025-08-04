@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.3 (Python 3.11.9 on win32)" generated="2025-06-13T16:26:16.108851" rpa="false" schemaversion="5">
+<suite id="s1" name="Testcase" source="D:\PycharmProjects\PythonProject\测试\testcase.robot">
+<test id="s1-t1" name="测试首页" line="5">
+<kw name="Open Browser" owner="SeleniumLibrary">
+<msg time="2025-06-13T16:26:16.314979" level="INFO">Opening browser 'chrome' to base url 'http://172.18.18.106.nip.io'.</msg>
+<arg>http://172.18.18.106.nip.io</arg>
+<arg>chrome</arg>
+<doc>Opens a new browser instance to the optional ``url``.</doc>
+<status status="PASS" start="2025-06-13T16:26:16.314979" elapsed="1.478711"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<msg time="2025-06-13T16:26:17.793690" level="INFO">Typing text 'admin' into text field 'placeholder="请输入用户名/邮箱"'.</msg>
+<msg time="2025-06-13T16:26:17.938672" level="INFO" html="true">&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td colspan="3"&gt;&lt;a href="selenium-screenshot-3.png"&gt;&lt;img src="selenium-screenshot-3.png" width="800px"&gt;&lt;/a&gt;</msg>
+<msg time="2025-06-13T16:26:17.938672" level="FAIL">Element with locator 'placeholder="请输入用户名/邮箱"' not found.</msg>
+<arg>placeholder="请输入用户名/邮箱"</arg>
+<arg>admin</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="FAIL" start="2025-06-13T16:26:17.793690" elapsed="0.145982">Element with locator 'placeholder="请输入用户名/邮箱"' not found.</status>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<arg>placeholder="请输入密码"</arg>
+<arg>admin</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="NOT RUN" start="2025-06-13T16:26:17.940672" elapsed="0.000000"/>
+</kw>
+<kw name="Input Text" owner="SeleniumLibrary">
+<arg>placeholder="请输入验证码"</arg>
+<arg>admin</arg>
+<doc>Types the given ``text`` into the text field identified by ``locator``.</doc>
+<status status="NOT RUN" start="2025-06-13T16:26:17.940672" elapsed="0.000000"/>
+</kw>
+<kw name="Click Button" owner="SeleniumLibrary">
+<arg>data-v-de3340ce</arg>
+<doc>Clicks the button identified by ``locator``.</doc>
+<status status="NOT RUN" start="2025-06-13T16:26:17.940672" elapsed="0.000000"/>
+</kw>
+<kw name="Wait Until Page Contains" owner="SeleniumLibrary">
+<arg>测试框架</arg>
+<doc>Waits until ``text`` appears on the current page.</doc>
+<status status="NOT RUN" start="2025-06-13T16:26:17.941672" elapsed="0.000000"/>
+</kw>
+<kw name="Page Should Contain" owner="SeleniumLibrary">
+<arg>测试框架</arg>
+<doc>Verifies that current page contains ``text``.</doc>
+<status status="NOT RUN" start="2025-06-13T16:26:17.941672" elapsed="0.000000"/>
+</kw>
+<kw name="Close Browser" owner="SeleniumLibrary">
+<doc>Closes the current browser.</doc>
+<status status="NOT RUN" start="2025-06-13T16:26:17.941672" elapsed="0.000000"/>
+</kw>
+<doc>测试首页</doc>
+<status status="FAIL" start="2025-06-13T16:26:16.313978" elapsed="1.627694">Element with locator 'placeholder="请输入用户名/邮箱"' not found.</status>
+</test>
+<status status="FAIL" start="2025-06-13T16:26:16.110850" elapsed="1.830822"/>
+</suite>
+<statistics>
+<total>
+<stat pass="0" fail="1" skip="0">All Tests</stat>
+</total>
+<tag>
+</tag>
+<suite>
+<stat name="Testcase" id="s1" pass="0" fail="1" skip="0">Testcase</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>

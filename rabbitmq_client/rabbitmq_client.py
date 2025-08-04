@@ -12,7 +12,7 @@ from typing import Union
 
 class RabbitMQClient:
     _instance = None
-    _lock = threading.RLock()
+    _lock = threading.Lock()
 
     def __init__(self,
                  host,
