@@ -6,14 +6,12 @@ HTTP客户端模块。
 """
 
 import json
-import time
 import threading
-import urllib.parse
+import time
+from http.client import HTTPConnection, HTTPSConnection
 from typing import Dict, Any, Optional, Union
-from urllib.request import Request
 from urllib.error import URLError, HTTPError
 from urllib.parse import urlencode, urlparse
-from http.client import HTTPConnection, HTTPSConnection
 
 
 class HTTPException(Exception):

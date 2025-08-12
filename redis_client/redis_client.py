@@ -6,6 +6,7 @@ from redis.exceptions import ConnectionError, TimeoutError
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+
 class RedisClient:
     def __init__(self, host='localhost', port=6379, db=0, password=None, socket_timeout=None):
         """
