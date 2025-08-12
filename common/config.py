@@ -63,7 +63,7 @@ from typing import Union, Optional
 
 import yaml
 from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad, unpad
+from Crypto.Hash import SHA256
 
 
 class Undefined:
@@ -332,46 +332,70 @@ class Config:
 
     def aes_encrypt(self, text: str) -> str:
         """
-        使用AES算法加密文本
-
-        :param text: 待加密的明文
-        :return: 加密后的Base64编码字符串
-        :raises ValueError: 未设置密钥时抛出异常
+        使用 AES-GCM 加密文本并返回 Base64 编码串（格式： nonce(12) | tag(16) | ciphertext ）
+        - 返回的 Base64 字符串可在另一台机器上使用相同 secret_key 解密
+        :param text: 待加密明文
+        :return: Base64 编码字符串（包含 nonce 和 tag）
+        :raises ValueError: 未设置 secret_key 时抛出
         """
         if not self._secret_key:
             raise ValueError("Secret key is required for encryption")
-        key = self._get_formatted_key()
-        cipher = AES.new(key, AES.MODE_CBC, self._iv)
-        encrypted_bytes = cipher.encrypt(pad(text.encode("utf-8"), AES.block_size))
-        return base64.b64encode(encrypted_bytes).decode("utf-8")
 
-    def _aes_decrypt(self, text: str) -> str:
+        key = self._get_formatted_key()  # 派生并返回 bytes（32）
+        # 推荐使用 12 字节 nonce（GCM 推荐长度）
+        nonce = os.urandom(12)
+        cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
+        ciphertext, tag = cipher.encrypt_and_digest(text.encode("utf-8"))
+
+        packed = nonce + tag + ciphertext
+        return base64.b64encode(packed).decode("utf-8")
+
+    def _aes_decrypt(self, encoded: str) -> str:
         """
-        使用AES算法解密文本
-
-        :param text: 待解密的Base64编码字符串
-        :return: 解密后的明文
-        :raises ValueError: 未设置密钥时抛出异常
+        使用 AES-GCM 解密 Base64 编码的字符串（应是 nonce|tag|ciphertext 的拼接）
+        :param encoded: Base64 编码的密文
+        :return: 解密后的明文字符串
+        :raises ValueError: 未设置 secret_key 或解密/验证失败时抛出
         """
         if not self._secret_key:
             raise ValueError("Secret key is required for decryption")
+
+        try:
+            raw = base64.b64decode(encoded)
+        except Exception as e:
+            raise ValueError("Invalid base64 input for decryption") from e
+
+        # nonce(12) | tag(16) | ciphertext(rest)
+        if len(raw) < 12 + 16:
+            raise ValueError("Ciphertext too short to contain nonce and tag")
+
+        nonce = raw[:12]
+        tag = raw[12:28]
+        ciphertext = raw[28:]
+
         key = self._get_formatted_key()
-        cipher = AES.new(key, AES.MODE_CBC, self._iv)
-        decrypted_bytes = unpad(cipher.decrypt(base64.b64decode(text)), AES.block_size)
-        return decrypted_bytes.decode("utf-8")
+        cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
+        try:
+            plaintext = cipher.decrypt_and_verify(ciphertext, tag)
+        except ValueError as e:
+            # 验证失败（可能是密钥错误或数据被篡改）
+            raise ValueError("Decryption failed or data corrupted") from e
+
+        return plaintext.decode("utf-8")
 
     def _get_formatted_key(self) -> bytes:
         """
-        格式化密钥，确保为16字节长度
-
-        :return: 16字节的密钥
+        将用户提供的 secret_key（str 或 bytes）派生为固定长度的 AES 密钥（32 字节）
+        - 使用 SHA-256 对密钥材料做一次单向散列，得到 32 字节密钥
+        - 这样无论用户传入 8/16/24/32 长度的 key 都可以安全使用
+        :return: 32 字节密钥（bytes）
         """
         if isinstance(self._secret_key, bytes):
-            key = self._secret_key
+            raw = self._secret_key
         else:
-            key = self._secret_key.encode("utf-8")
-        # 使用ljust左对齐并填充到16字节，然后切片确保不超过16字节
-        return key.ljust(16)[:16]
+            raw = str(self._secret_key).encode("utf-8")
+        h = SHA256.new(raw)
+        return h.digest()
 
 
 if __name__ == "__main__":

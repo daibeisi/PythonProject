@@ -458,5 +458,6 @@ class EtcdClient:
         """析构函数"""
         try:
             self.disconnect()
-        except:
+        except Exception as e:
+            logger.error(f"在析构函数中关闭客户端时出错: {str(e)}")
             pass
